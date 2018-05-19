@@ -2,13 +2,24 @@
   
   class DTB {
   private $conn=null;
-  public function __construct($dtb){
-    @$this->conn=new mysqli($dtb["host"], $dtb["user"], $dtb["pass"], $dtb["dtb"]);
-    $pokusy=0;
-    while (($this->conn->connect_errno) && ($pokusy<10)) {
+  public function __construct($dtb, $dtbname = null){
+    if (is_array($dtb)) {
+      $hostname = $dtb["host"];
+      $username = $dtb["user"];
+      $password = $dtb["pass"];
+      $dtbname = $dtb["dtb"];
+    } else {
+      $hostname = preg_replace("/^.*Data Source=(.+?);.*$/", "\\1", $dtb);
+      $username = preg_replace("/^.*User Id=(.+?);.*$/", "\\1", $dtb);
+      $password = preg_replace("/^.*Password=(.+?)$/", "\\1", $dtb);
+    }
+    
+    @$this->conn = new mysqli($hostname, $username, $password, $dtbname);
+    $tries = 0;
+    while (($this->conn->connect_errno) && ($tries < 10)) {
       sleep(rand(1,5));
-      $pokusy++;
-      @$this->conn=new mysqli($dtb["host"], $dtb["user"], $dtb["pass"], $dtb["dtb"]);
+      $tries++;
+      @$this->conn=new mysqli($hostname, $username, $password, $dtbname);
     }
     if ($this->conn->connect_errno) {
       die ("Failed to connect to MySQL: (".$this->conn->connect_errno.") ".$this->conn->connect_error);
