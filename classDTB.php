@@ -31,6 +31,10 @@
     $x = $this->escapeStringWithParams(func_get_args());
     return $this->conn->query($x);  
   }
+  public function prepareQuery(){
+    $q = $this->escapeStringWithParams(func_get_args());
+    return $q;      
+  }
   private function escapeStringWithParams ($args) {
     $this->args = $args;
     $x = array_shift($this->args);
@@ -60,7 +64,7 @@
     if (!$x["where"]) die ("UPDATE need non-empty WHERE");
     if (!$x["table"]) die ("UPDATE need non-empty TABLE");
     if (is_array($x["where"])) {
-      $x["where"] = $this->escapeWhereClausule($x["where"]);
+      $x["where"] = $this->escapeStringWithParams($x["where"]);
     }
     $q = "UPDATE " . $x["table"] . " SET " . $this->escapeArray($x["set"]) . " WHERE " . $x["where"];
     if (array_key_exists("test", $x)) die($q);
@@ -70,7 +74,7 @@
     if (!$x["where"]) die ("DELETE need non-empty WHERE");
     if (!$x["table"]) die ("DELETE need non-empty TABLE");
     if (is_array($x["where"])) {
-      $x["where"] = $this->escapeWhereClausule($x["where"]);
+      $x["where"] = $this->escapeStringWithParams($x["where"]);
     }
     $q = "DELETE FROM " . $x["table"] . " WHERE " . $x["where"];
     if (array_key_exists("test", $x)) die($q);
