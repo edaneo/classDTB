@@ -79,23 +79,33 @@
   public function escapeString($x){
     return $this->conn->real_escape_string($x);
   }
-  public function getAssocTable($q){
+  public function getAssocTable(){
+    $q = $this->escapeStringWithParams(func_get_args());
     $res = $this->conn->query($q);
     $rows = array();
     while ($row = $res->fetch_assoc()) array_push($rows, $row);
     return $rows;
   }
-  public function getEnumTable($q){
+  public function getEnumTable(){
+    $q = $this->escapeStringWithParams(func_get_args());
     $res = $this->conn->query($q);
     $rows = array();
     while ($row = $res->fetch_row()) array_push($rows, $row);
     return $rows;
   }
-  public function getSingleColumnTable($q){
+  public function getSingleColumnTable(){
+    $q = $this->escapeStringWithParams(func_get_args());
     $res = $this->conn->query($q);
     $rows = array();
     while ($row = $res->fetch_row()) array_push($rows, $row[0]);
     return $rows;
+  }
+  public function getValue(){
+    $q = $this->escapeStringWithParams(func_get_args());
+    $val = null;
+    $arr = $this->getSingleColumnTable($q);
+    if (count($arr)) $val = $arr[0];
+    return $val;
   }
   
   private function escapeArray($arr){
