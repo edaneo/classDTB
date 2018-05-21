@@ -111,7 +111,28 @@
     if (count($arr)) $val = $arr[0];
     return $val;
   }
-  
+  public function fetchRowAndDecode() {
+    $row = null;
+    $q = $this->escapeStringWithParams(func_get_args());
+    $res = $this->conn->query($q);
+    if ($res) {
+      $row = $res->fetch_assoc();
+      $this->decodeRow($row);
+    }
+    return $row;
+  }
+  private function decodeRow(&$row) {
+    foreach($row as $key => &$value) {
+      if ($value && is_string($value) && (substr($value, 0, 1) == "{" || substr($value, 0, 1) == "[")) {
+        try {
+          $x = json_decode($value, true);
+        } catch (Exception $e) {
+          $x = null;
+        }
+        if ($x) $value = $x;
+      } 
+    }
+  }
   private function escapeArray($arr){
     $noescape=Array("NOW()","CURRENT_TIMESTAMP");
     $set=Array();
