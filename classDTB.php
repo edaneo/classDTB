@@ -134,7 +134,7 @@
     }
   }
   private function escapeArray($arr){
-    $noescape=Array("NOW()","CURRENT_TIMESTAMP");
+    $noescape=Array("NOW()","CURRENT_TIMESTAMP","NULL");
     $set=Array();
     foreach ($arr as $key=>$value) {
       if (substr($key,0,1)=="#") $key=substr($key,1);
