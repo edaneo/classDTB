@@ -146,6 +146,9 @@
     }
     return implode(", ",$set);
   }
+  public function close(){
+    $this->conn->close();
+  }
 }
 
 ?>
