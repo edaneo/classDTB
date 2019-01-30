@@ -149,6 +149,24 @@
   public function close(){
     $this->conn->close();
   }
+  public function parseInt(&$input, $keys) {
+    foreach ($input as $key => &$value) {
+      if (in_array($key, $keys) !== false) {
+        $value = (int)$value;
+      }
+    }
+  }
+  public function parseJSON(&$input, $keys) {
+    foreach ($input as $key => &$value) {
+      if (in_array($key, $keys) !== false) {
+        try {
+          $value = json_decode($value, true);
+        } catch (Exception $e) {
+          $value = null;
+        }
+      }
+    }
+  }
 }
 
 ?>
