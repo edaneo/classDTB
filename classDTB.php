@@ -47,17 +47,20 @@
   public function fetch($x){
     return $x->fetch_assoc();  
   }
-  public function insert($x){
-    if (!is_array($x["set"])) die ("INSERT need array SET");
-    if (!$x["table"]) die ("INSERT need non-empty TABLE");
+  public function insert ($x) {
+    if (!is_array($x["set"]))                    throw new Exception ("DTB: INSERT needs (array)set");
+    if (!$x["table"] || !is_string($x["table"])) throw new Exception ("DTB: INSERT needs (string)table");
     if (array_key_exists("update", $x) && is_array($x["update"])) {
-      $q="INSERT INTO ".$x["table"]." SET ".$this->escapeArray(array_merge($x["set"], $x["update"])) . " ON DUPLICATE KEY UPDATE " . $this->escapeArray($x["update"]);
+      $q = "INSERT INTO " . $x["table"] . " SET " . $this->escapeArray(array_merge($x["set"], $x["update"])) . " ON DUPLICATE KEY UPDATE " . $this->escapeArray($x["update"]);
     } else {
-      $q="INSERT INTO ".$x["table"]." SET ".$this->escapeArray($x["set"]);
+      $q = "INSERT INTO " . $x["table"] . " SET " . $this->escapeArray($x["set"]);
     }
-    if (array_key_exists("test", $x)) die($q);
-    $this->conn->query($q);
-    return ($this->conn->insert_id);
+    if (array_key_exists("test", $x)) throw new Exception ("DTB test: " . $q);
+    if ($this->conn->query($q)) {
+      return ($this->conn->insert_id);
+    } else {
+      return false;
+    }
   }
   public function update($x){
     if (!is_array($x["set"])) die ("UPDATE need array SET");
