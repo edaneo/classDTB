@@ -93,6 +93,12 @@
     while ($row = $res->fetch_assoc()) array_push($rows, $row);
     return $rows;
   }
+  public function getRow(){
+    $q = $this->escapeStringWithParams(func_get_args());
+    $res = $this->conn->query($q);
+    $row = $res->fetch_assoc();
+    return $row;
+  }
   public function getEnumTable(){
     $q = $this->escapeStringWithParams(func_get_args());
     $res = $this->conn->query($q);
