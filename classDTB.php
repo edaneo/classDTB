@@ -165,6 +165,13 @@
       }
     }
   }
+  public function parseFloat(&$input, $keys) {
+    foreach ($input as $key => &$value) {
+      if (in_array($key, $keys) !== false) {
+        $value = (float)$value;
+      }
+    }
+  }
   public function parseJSON(&$input, $keys) {
     foreach ($input as $key => &$value) {
       if (in_array($key, $keys) !== false) {
