@@ -143,17 +143,33 @@
     }
   }
   private function escapeArray($arr){
-    $noescape=Array("NOW()","CURRENT_TIMESTAMP","NULL");
-    $set=Array();
-    foreach ($arr as $key=>$value) {
-      if (substr($key,0,1)=="#") $key=substr($key,1);
-      else if (is_string($value)) {
-        if (!in_array($value, $noescape)) $value="'".$this->conn->real_escape_string($value)."'";
-      } else if (is_null($value)) $value="NULL";
-      else if (!is_float($value) && !is_integer($value)) die("all values need to be NULL, STRING, INTEGER or FLOAT ".json_encode($arr));
-      array_push($set,$key."=".$value);
+    $noescape = [
+      "NOW()",
+      "CURRENT_TIMESTAMP",
+      "NULL"
+    ];
+
+    $set = [];
+
+    foreach ($arr as $key => $value) {
+      if (substr($key,0,1) == "#") {
+        $key = substr($key, 1);
+      } else if (is_array($value)) {
+        $value = "'" . $this->conn->real_escape_string(json_encode($value)) . "'";
+      } else if (is_string($value)) {
+        if (!in_array($value, $noescape)) {
+          $value = "'" . $this->conn->real_escape_string($value) . "'";
+        }
+      } else if (is_null($value)) {
+        $value = "NULL";
+      } else if (!is_float($value) && !is_integer($value)) {
+        die("all values need to be NULL, ARRAY, STRING, INTEGER or FLOAT " . json_encode($arr));
+      }
+
+      array_push($set, $key . "=" . $value);
     }
-    return implode(", ",$set);
+
+    return implode(", ", $set);
   }
   public function close(){
     $this->conn->close();
