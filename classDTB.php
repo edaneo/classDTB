@@ -199,6 +199,9 @@
       }
     }
   }
+  public function getAffectedRows() {
+    return $this->conn->affected_rows; 
+  }
 }
 
 ?>
