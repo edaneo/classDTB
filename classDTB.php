@@ -1,33 +1,45 @@
 <?php
   
-  class DTB {
-  private $conn=null;
+class DTB {
+  private $conn = null;
+  private $args = [];
+
   public function __construct($dtb, $dtbname = null){
     if (is_array($dtb)) {
-      $hostname = $dtb["host"];
-      $username = $dtb["user"];
-      $password = $dtb["pass"];
-      $dtbname = $dtb["dtb"];
+      $this->hostname = $dtb["host"];
+      $this->username = $dtb["user"];
+      $this->password = $dtb["pass"];
+      $this->dtbname = $dtb["dtb"];
     } else {
-      $hostname = preg_replace("/^.*Data Source=(.+?);.*$/", "\\1", $dtb);
-      $username = preg_replace("/^.*User Id=(.+?);.*$/", "\\1", $dtb);
-      $password = preg_replace("/^.*Password=(.+?)$/", "\\1", $dtb);
+      $this->hostname = preg_replace("/^.*Data Source=(.+?);.*$/", "\\1", $dtb);
+      $this->username = preg_replace("/^.*User Id=(.+?);.*$/", "\\1", $dtb);
+      $this->password = preg_replace("/^.*Password=(.+?)$/", "\\1", $dtb);
+      $this->dtbname = $dtbname;
     }
+  }
+  private function connect() {
+    if ($this->conn) return;
     
-    @$this->conn = new mysqli($hostname, $username, $password, $dtbname);
+    @$this->conn = new mysqli($this->hostname, $this->username, $this->password, $this->dtbname);
     $tries = 0;
     while (($this->conn->connect_errno) && ($tries < 10)) {
       sleep(rand(1,5));
       $tries++;
-      @$this->conn=new mysqli($hostname, $username, $password, $dtbname);
+      @$this->conn=new mysqli($this->hostname, $this->username, $this->password, $this->dtbname);
     }
     if ($this->conn->connect_errno) {
       die ("Failed to connect to MySQL: (".$this->conn->connect_errno.") ".$this->conn->connect_error);
     }
     $this->conn->set_charset("utf8");  
   }
-  private $args = array();
+  public function disconnect() {
+    $this->conn->close();
+    
+    $this->conn = null;
+  }
   public function query(){
+    $this->connect();
+
     $x = $this->escapeStringWithParams(func_get_args());
     return $this->conn->query($x);  
   }
@@ -48,6 +60,8 @@
     return $x->fetch_assoc();  
   }
   public function insert ($x) {
+    $this->connect();
+
     if (!is_array($x["set"]))                    throw new Exception ("DTB: INSERT needs (array)set");
     if (!$x["table"] || !is_string($x["table"])) throw new Exception ("DTB: INSERT needs (string)table");
     if (array_key_exists("update", $x) && is_array($x["update"])) {
@@ -63,6 +77,8 @@
     }
   }
   public function update($x){
+    $this->connect();
+
     if (!is_array($x["set"])) die ("UPDATE need array SET");
     if (!$x["where"]) die ("UPDATE need non-empty WHERE");
     if (!$x["table"]) die ("UPDATE need non-empty TABLE");
@@ -74,6 +90,8 @@
     $this->conn->query($q);
   }
   public function delete($x){
+    $this->connect();
+
     if (!$x["where"]) die ("DELETE need non-empty WHERE");
     if (!$x["table"]) die ("DELETE need non-empty TABLE");
     if (is_array($x["where"])) {
@@ -84,9 +102,13 @@
     $this->conn->query($q);
   }
   public function escapeString($x){
+    $this->connect();
+
     return $this->conn->real_escape_string($x);
   }
   public function getAssocTable(){
+    $this->connect();
+
     $q = $this->escapeStringWithParams(func_get_args());
     $res = $this->conn->query($q);
     $rows = array();
@@ -94,12 +116,16 @@
     return $rows;
   }
   public function getRow(){
+    $this->connect();
+
     $q = $this->escapeStringWithParams(func_get_args());
     $res = $this->conn->query($q);
     $row = $res->fetch_assoc();
     return $row;
   }
   public function getEnumTable(){
+    $this->connect();
+
     $q = $this->escapeStringWithParams(func_get_args());
     $res = $this->conn->query($q);
     $rows = array();
